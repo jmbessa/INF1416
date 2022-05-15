@@ -1,7 +1,6 @@
 package LogView;
 
 import Autentication.Autenticator;
-import defpackage.CofreFrame;
 
 public class LogViewTest {
 

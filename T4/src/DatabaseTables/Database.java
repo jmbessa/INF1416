@@ -1,10 +1,13 @@
 package DatabaseTables;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.sql.*;
+
+import Autentication.CertificateHelper;
 
 
 public class Database {
@@ -23,7 +26,7 @@ public class Database {
             database = new Database();
             Class.forName("org.sqlite.JDBC");
 
-            String url = "jdbc:sqlite:trab4.db";
+            String url = "jdbc:sqlite:banco.db";
             database.connection = DriverManager.getConnection(url);
 
         } catch(ClassNotFoundException e) {
@@ -45,9 +48,7 @@ public class Database {
     
     public boolean updateUsuario( String email, String campo, Object cam ) throws Exception {
     	String updtUsuario = null;
-    	if( campo.equals("certificate") ) { 
-    		cam = Files.readAllBytes(Paths.get(campo));
-    	} 
+    	
     	if( campo.equals("senha") ) {
     		String caracteresValidos = "1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
     		SecureRandom secureRandomUsr = new SecureRandom();
@@ -65,7 +66,8 @@ public class Database {
     	    updtUsuario = "UPDATE Usuarios SET digest = '" +  byteArrayToHex(digestUser) + "', salt = '" + (new String(saltUsr)) + "'  WHERE email = '" + email +"';";
     	    
     	} else {
-    		updtUsuario = "UPDATE Usuarios SET '" + campo + "' = '" + cam + "' WHERE email = '" + email +"';";
+    		String certiHelper = ((CertificateHelper) cam).convertToPem();
+    		updtUsuario = "UPDATE Usuarios SET '" + campo + "' = '" + certiHelper + "' WHERE email = '" + email +"';";
     	}
 		
         PreparedStatement pS = this.connection.prepareStatement(updtUsuario);
@@ -75,7 +77,8 @@ public class Database {
     
     public boolean insertUsuario( String email, String senha, String filePath, int grupo, String nome ) throws Exception {
         String caracteresValidos = "1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
+        
+        CertificateHelper certiHelper = new CertificateHelper(filePath);
     	
 	    SecureRandom secureRandomUsr = new SecureRandom();
 	    byte[] saltUsr = new byte[10];
@@ -94,7 +97,7 @@ public class Database {
 	    pS.setString(1, email);
 	    pS.setString(2, byteArrayToHex(digestUser));
 	    pS.setString(3, new String(saltUsr));
-	    pS.setBytes(4, Files.readAllBytes(Paths.get(filePath)));
+	    pS.setString(4, certiHelper.convertToPem());
 	    pS.setInt(5, grupo);
 	    pS.setInt(6, 0);
 	    pS.setInt(7, 0);

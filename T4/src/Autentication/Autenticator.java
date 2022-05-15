@@ -84,10 +84,10 @@ public class Autenticator {
 	public boolean secondStepAutentication(String [] sequencias) {
 		
 		boolean ret = false;
-		String [][] passwords = new String[sequencias.length][3];
+		String [][] passwords = new String[sequencias.length][2];
 		
-		if( sequencias.length < 4 || sequencias.length > 6 ) {
-			System.out.println("Senha precisa ter entre 4 e 6 fonemas");
+		if( sequencias.length < 8 || sequencias.length > 10 ) {
+			System.out.println("Senha precisa ter entre 8 e 10 digitos");
 			return false;
 		}	
 		
@@ -104,8 +104,7 @@ public class Autenticator {
 		// com o digestDB. Se for equivalente, retorne true, caso contrario, false.
 		try {
 			ret = checkPossibilityTree( passwords[0][0], passwords, salt, digestDB, 1 ) || 
-				  checkPossibilityTree( passwords[0][1], passwords, salt, digestDB, 1 ) ||
-				  checkPossibilityTree( passwords[0][2], passwords, salt, digestDB, 1 );
+				  checkPossibilityTree( passwords[0][1], passwords, salt, digestDB, 1 );
 		} catch (NoSuchAlgorithmException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -124,32 +123,30 @@ public class Autenticator {
 	}
 	
 	private boolean checkPossibilityTree( String currentComp, String [][] password, String salt, String digestDB, int node ) throws NoSuchAlgorithmException {
-		boolean ret1;
-		boolean ret2;
-		boolean ret3;
-		
-		if( node == password.length ) {
-			// Por conta do digestDB ser DIGEST + SALT, precisamos
-			// gerar DIGEST + SALT a partir do password encontrado
-			// e do salt armazenado no banco.
-			MessageDigest messageDigest = MessageDigest.getInstance("SHA1");
-			messageDigest.update((currentComp + salt).getBytes());
-			String digest = byteArrayToHex(messageDigest.digest());
-			
-			if( digest.equals(digestDB)) {
-				System.out.println("Comp correta:" + currentComp);
-				return true;
-			} else {
-				return false;
-			}
-		} else {
-			ret1 = checkPossibilityTree( currentComp + password[node][0], password, salt, digestDB, node+1 );
-			ret2 = checkPossibilityTree( currentComp + password[node][1], password, salt, digestDB, node+1 );
-			ret3 = checkPossibilityTree( currentComp + password[node][2], password, salt, digestDB, node+1 );
-		}
+        boolean ret1;
+        boolean ret2;
+        
+        if( node == password.length ) {
+            // Por conta do digestDB ser DIGEST + SALT, precisamos
+            // gerar DIGEST + SALT a partir do password encontrado
+            // e do salt armazenado no banco.
+            MessageDigest messageDigest = MessageDigest.getInstance("SHA1");
+            messageDigest.update((currentComp + salt).getBytes());
+            String digest = byteArrayToHex(messageDigest.digest());
+            
+            if( digest.equals(digestDB)) {
+                System.out.println("Comp correta:" + currentComp);
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            ret1 = checkPossibilityTree( currentComp + password[node][0], password, salt, digestDB, node+1 );
+            ret2 = checkPossibilityTree( currentComp + password[node][1], password, salt, digestDB, node+1 );
+        }
 
-		return ret1 || ret2 || ret3;
-	}
+        return ret1 || ret2;
+    }
 	
 	
 //	Na terceira e última etapa de autenticação, deve-se verificar a chave privada do usuário

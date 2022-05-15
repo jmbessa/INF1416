@@ -1,8 +1,6 @@
 package Autentication;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.nio.file.Files;
@@ -13,10 +11,12 @@ import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.security.cert.CertificateEncodingException;
+import java.util.Base64;
 
 public class CertificateHelper {
 	
-	X509Certificate x509Certificate;
+	static X509Certificate x509Certificate;
 	
 	public CertificateHelper( String certificatePath ) throws Exception {	
 		Path f = Paths.get(certificatePath);
@@ -33,6 +33,18 @@ public class CertificateHelper {
 			throw new Exception("Problema no certificado");
 		}
 	}
+	
+	public String convertToPem() throws CertificateEncodingException {
+	    String BEGIN_CERT = "-----BEGIN CERTIFICATE-----"; 
+	    String END_CERT = "-----END CERTIFICATE-----";
+	    String LINE_SEPARATOR = "\n";
+
+	    final Base64.Encoder encoder = Base64.getMimeEncoder(64, LINE_SEPARATOR.getBytes());
+	    final byte[] rawCrtText = x509Certificate.getEncoded();
+	    final String encodedCertText = new String(encoder.encode(rawCrtText));
+	    final String prettified_cert = BEGIN_CERT + LINE_SEPARATOR + encodedCertText + LINE_SEPARATOR + END_CERT;
+	    return prettified_cert;
+	  }
 	
 	public String getCertificateEmail() {
 		return getCertificateField("EMAILADDRESS");
