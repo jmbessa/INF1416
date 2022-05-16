@@ -107,7 +107,6 @@ public class Database {
     }
     
     public int getUsuarioCount() throws Exception {
-    	System.out.println("Contando todos os usuarios...");
 		
 		String selectUsuario = "SELECT COUNT(*) as total FROM Usuarios ;";
 		

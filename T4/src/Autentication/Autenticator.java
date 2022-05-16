@@ -67,6 +67,13 @@ public class Autenticator {
 			e.printStackTrace();
 		}
 		
+		try {
+			insertRegistro(2005, -1, null, true);  // Usuario não existe
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		return ret;
 	}
 	
@@ -84,12 +91,7 @@ public class Autenticator {
 	public boolean secondStepAutentication(String [] sequencias) {
 		
 		boolean ret = false;
-		String [][] passwords = new String[sequencias.length][2];
-		
-		if( sequencias.length < 8 || sequencias.length > 10 ) {
-			System.out.println("Senha precisa ter entre 8 e 10 digitos");
-			return false;
-		}	
+		String [][] passwords = new String[sequencias.length][2];	
 		
 		for(int i = 0; i<sequencias.length;i++) {
 			String[] separator = sequencias[i].split("-");
@@ -135,7 +137,7 @@ public class Autenticator {
             String digest = byteArrayToHex(messageDigest.digest());
             
             if( digest.equals(digestDB)) {
-                System.out.println("Comp correta:" + currentComp);
+            	System.out.println("Comp correta:" + currentComp);
                 return true;
             } else {
                 return false;
@@ -295,6 +297,13 @@ public class Autenticator {
         	Database db = Database.getInstance();
 			boolean ret = db.checkIfIsBlocked(currentUserVerification.getEmail());
 			System.out.println("Usuario :" + currentUserVerification.getEmail() + " bloqueado? " + ret);
+			
+			try {
+				insertRegistro(2004, -1, null, true); // Usuario com acesso bloqueado
+			} catch (Exception e) {
+				System.out.println("Identificado com acesso bloqueado");
+				// TODO Auto-generated catch block
+			}	
 			db.connection.close();
 			return ret;
 		} catch (Exception e) {
