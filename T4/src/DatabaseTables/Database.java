@@ -1,3 +1,6 @@
+//JOÃO MARCELLO BESSA RODRIGUES - 1720539
+//RAFAEL RAMOS FELICIANO - 1521772
+
 package DatabaseTables;
 import java.net.URI;
 import java.nio.file.Files;
@@ -180,7 +183,7 @@ public class Database {
     }
     
     public boolean checkIfIsBlocked(String email) throws Exception {		
-		String selectGrupo = "SELECT * FROM Registros WHERE data >= DATETIME(CURRENT_TIMESTAMP, '-15 seconds') AND (registro = '3007' OR registro = '4007')" +
+		String selectGrupo = "SELECT * FROM Registros WHERE data >= DATETIME(CURRENT_TIMESTAMP, '-2 minutes') AND (registro = '3007' OR registro = '4007')" +
 							 "AND usuario = '" + email + "';";
 		
         PreparedStatement pS = this.connection.prepareStatement(selectGrupo);

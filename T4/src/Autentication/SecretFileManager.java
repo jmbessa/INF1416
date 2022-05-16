@@ -1,3 +1,6 @@
+//JOÃO MARCELLO BESSA RODRIGUES - 1720539
+//RAFAEL RAMOS FELICIANO - 1521772
+
 package Autentication;
 
 import java.nio.file.Files;
@@ -8,8 +11,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Signature;
-import java.util.ArrayList;
-import java.util.List;
+
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -71,9 +73,9 @@ public class SecretFileManager {
         	aut.insertRegistro(8004, -1, null, true);
         	throw new Exception("Caminho inválido");
         }
-        byte[] fileBytes = Files.readAllBytes(path);
-        Cipher cipher = Cipher.getInstance("RSA");
+        Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
         cipher.init(Cipher.DECRYPT_MODE, privateKey);
+        byte[] fileBytes = Files.readAllBytes(path);
         byte[] seed = cipher.doFinal(fileBytes);
         // Com a seed gera a Key para a próxima etapa
         SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG");

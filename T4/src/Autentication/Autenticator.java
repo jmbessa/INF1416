@@ -1,3 +1,6 @@
+//JOÃO MARCELLO BESSA RODRIGUES - 1720539
+//RAFAEL RAMOS FELICIANO - 1521772
+
 package Autentication;
 
 import java.io.ByteArrayInputStream;
@@ -38,15 +41,6 @@ public class Autenticator {
 		
 	}
 	
-	
-//	Na primeira etapa de autenticação, deve-se solicitar a identificação do usuário (login name)
-//	no sistema, que deve ser um e-mail válido. O e-mail do usuário deve ser coletado do seu
-//	respectivo certificado digital no momento do seu cadastramento no sistema. Se a identificação for
-//	inválida, o usuário deve ser apropriadamente avisado e o processo deve permanecer na primeira
-//	etapa. Se a identificação for válida e o acesso do usuário estiver bloqueado, o mesmo deve ser
-//	apropriadamente avisado e o processo deve permanecer na primeira etapa. Caso contrário, o
-//	processo deve seguir para a segunda etapa
-	
 	public boolean firstStepAutentication(String email) {
 		boolean ret = false;
 
@@ -57,7 +51,6 @@ public class Autenticator {
 			
 			if( ret ) {
 				currentUserVerification = u;
-				insertRegistro(2003, -1, null, true );
 			} else {
 				wrongEmail = email;
 			}
@@ -67,27 +60,18 @@ public class Autenticator {
 			e.printStackTrace();
 		}
 		
-		try {
-			insertRegistro(2005, -1, null, true);  // Usuario não existe
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if (!ret) {
+			try {
+				insertRegistro(2005, -1, null, true);  // Usuario não existe
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		
 		return ret;
 	}
-	
-//	Na segunda etapa, deve-se verificar a senha pessoal do usuário (algo que ele conhece)
-//	que é fornecida através de um teclado virtual fonético sobrecarregado com seis botões, cada um
-//	com três fonemas, que são distribuídos aleatoriamente e sem repetição entre todos os botões. As
-//	senhas pessoais são sempre formadas por quatro, cinco ou seis fonemas da Tabela de Fonemas
-//	para Autenticação. A cada pressionamento de um botão, os fonemas são redistribuídos
-//	aleatoriamente entre os seis botões. Se a verificação da senha for negativa, o usuário deve ser
-//	apropriadamente avisado e o processo deve contabilizar um erro de verificação de senha pessoal.
-//	Após três erros consecutivos sem que ocorra uma verificação positiva entre os erros, deve-se
-//	seguir para a primeira etapa e o acesso do usuário deve ser bloqueado por 2 minutos (outros
-//	usuários poderão tentar ter acesso). Se a verificação for positiva, o processo deve seguir para a
-//	terceira etapa
+
 	public boolean secondStepAutentication(String [] sequencias) {
 		
 		boolean ret = false;
@@ -137,7 +121,6 @@ public class Autenticator {
             String digest = byteArrayToHex(messageDigest.digest());
             
             if( digest.equals(digestDB)) {
-            	System.out.println("Comp correta:" + currentComp);
                 return true;
             } else {
                 return false;
@@ -150,21 +133,6 @@ public class Autenticator {
         return ret1 || ret2;
     }
 	
-	
-//	Na terceira e última etapa de autenticação, deve-se verificar a chave privada do usuário
-//	(algo que ele possui) fornecida para o sistema através de um arquivo binário que armazena o
-//	resultado da criptografia da chave privada com o algoritmo simétrico DES/ECB/PKCS5Padding e
-//	uma chave secreta. A chave privada não criptografada é representada no padrão PKCS8 e se
-//	encontra codificada em BASE64, no formato PEM (Privacy Enhanced Mail). O sistema deve
-//	receber a frase secreta de decriptação da chave privada, que deve ser utilizada como semente do
-//	SHA1PRNG para recuperar a chave secreta. Depois de decriptar o arquivo binário, deve-se gerar
-//	uma assinatura digital no padrão RSA (SHA1withRSA) para um array aleatório de 2048 bytes e,
-//	em seguida, verificar a assinatura digital com a chave pública do usuário. Se a verificação for
-//	negativa, o usuário deve ser apropriadamente avisado e o processo deve contabilizar um erro de
-//	verificação da chave privada, retornando para o início da terceira etapa. Após três erros
-//	consecutivos sem que ocorra uma verificação válida da chave privada, deve-se seguir para a
-//	primeira etapa e o acesso do usuário deve ser bloqueado por 2 minutos (outros usuários poderão
-//	tentar ter acesso). Se a verificação for positiva, o processo deve permitir acesso ao sistema.
 
 	public boolean thirdStepAutentication(String password, Path validationFile) throws Exception {
 		boolean ret = false;
@@ -297,15 +265,29 @@ public class Autenticator {
         	Database db = Database.getInstance();
 			boolean ret = db.checkIfIsBlocked(currentUserVerification.getEmail());
 			System.out.println("Usuario :" + currentUserVerification.getEmail() + " bloqueado? " + ret);
-			
-			try {
-				insertRegistro(2004, -1, null, true); // Usuario com acesso bloqueado
-			} catch (Exception e) {
-				System.out.println("Identificado com acesso bloqueado");
-				// TODO Auto-generated catch block
-			}	
 			db.connection.close();
+			
+			if(ret) {
+				try {
+					insertRegistro(2004, -1, null, true); // Usuario com acesso bloqueado
+				} catch (Exception e) {
+					System.out.println("Identificado com acesso bloqueado");
+					// TODO Auto-generated catch block
+				}
+				db.connection.close();
+			}
+			else {
+				try {
+					insertRegistro(2003, -1, null, true );
+				} catch (Exception e) {
+					System.out.println("Identificado com acesso bloqueado");
+					// TODO Auto-generated catch block
+				}
+				db.connection.close();
+			}
+				
 			return ret;
+			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			System.out.println("Nao conseguiu verificar se esta bloqueado: " + e.toString());

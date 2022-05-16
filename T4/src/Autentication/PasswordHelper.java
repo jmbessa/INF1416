@@ -1,3 +1,6 @@
+//JOÃO MARCELLO BESSA RODRIGUES - 1720539
+//RAFAEL RAMOS FELICIANO - 1521772
+
 package Autentication;
 
 public class PasswordHelper {
@@ -19,13 +22,13 @@ public class PasswordHelper {
         for( int i = 0; i < senha.length()-2; i = i+2) {
             char first_digit = senha.charAt(i);
             char end_digit  = senha.charAt(i+1);
-            String fonema1 = new String("" + first_digit + end_digit); 
+            String digit1 = new String("" + first_digit + end_digit); 
             char first_digit2 = senha.charAt(i+2);
             char end_digit2  = senha.charAt(i+3);
-            String fonema2 = new String("" + first_digit2 + end_digit2);
+            String digit2 = new String("" + first_digit2 + end_digit2);
             
-            if( fonema1.equals(fonema2) ) {
-                throw new Exception("Senha não pode ter dois fonemas iguais seguidos");
+            if( digit1.equals(digit2) ) {
+                throw new Exception("Senha não pode ter dois digitos iguais seguidos");
             }
         }
         
