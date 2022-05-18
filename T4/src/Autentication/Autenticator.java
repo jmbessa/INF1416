@@ -98,8 +98,8 @@ public class Autenticator {
 		try {
 			if( ret ) {
 				insertRegistro(3003, -1, null, true);
+				insertRegistro(3002, -1, null, true);
 			}
-			insertRegistro(3002, -1, null, true);
 			
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block

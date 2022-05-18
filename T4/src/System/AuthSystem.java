@@ -32,14 +32,13 @@ public class AuthSystem {
 	public static void firstAutenticator(Autenticator autenticator) throws Exception {
 		
 		aut = autenticator;
-		aut.insertRegistro(1001, -1, null, false );
 		
 		Scanner sc = new Scanner(System.in);
-		System.out.println("Favor insira o email de login:");
+		System.out.println("\nFavor insira o email de login:");
 		String usrEmail = sc.nextLine();
 		
 		while(aut.firstStepAutentication(usrEmail) == false || aut.checkIfCurrentUserIfBlocked()) {
-			System.out.println("Favor insira o email de login:");
+			System.out.println("\nFavor insira o email de login:");
 			usrEmail = sc.nextLine();
 		}
 		
@@ -141,7 +140,9 @@ public class AuthSystem {
 		return failsCount;
 	}
 	
-	private static void ThirdAutenticator(Autenticator aut) {
+	private static int ThirdAutenticator(Autenticator aut) {
+		int ret;
+		int failsCount = 1;
 		
 		try {
 			aut.insertRegistro(4001, -1, null, true); // Inicio 3 etapa de verificacao	
@@ -151,48 +152,53 @@ public class AuthSystem {
 	    		
 	    if( !aut.checkIfCurrentUserIfBlocked()) {
 	    	
-	    	sc = new Scanner(System.in);
-			System.out.println("Favor entre com a chave privada:\n");
-			String usrprivK= sc.nextLine();
-			
-			sc = new Scanner(System.in);
-			System.out.println("Favor entre com a frase secreta:\n");
-			String usrsecretF = sc.nextLine();
-			
-			Path p = Paths.get(usrprivK);
-			
-	    	try  {
-	    		aut.thirdStepAutentication(usrsecretF,p);
-				try {
-					aut.zeroFailure();
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				// CHAMA O MENU
+	    	while (failsCount != 0) {
+		    	sc = new Scanner(System.in);
+				System.out.println("\nFavor entre com a chave privada:");
+				String usrprivK= sc.nextLine();
 				
-			} catch( Exception e ) {
-				try {
-					int failsCount = aut.applyFailure();
-					int remaningTries =  (3 - failsCount);
-					String dialogText = e.getMessage();
-					if( remaningTries > 0) {
-						dialogText = dialogText + ". Mais " + remaningTries + " tentativas.";
+				sc = new Scanner(System.in);
+				System.out.println("\nFavor entre com a frase secreta:\n");
+				String usrsecretF = sc.nextLine();
+				
+				Path p = Paths.get(usrprivK);
+				
+		    	try  {
+		    		aut.thirdStepAutentication(usrsecretF,p);
+					try {
+						aut.zeroFailure();
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
+					ret = 0;
+					return ret;
+					// CHAMA O MENU
 					
-					System.out.printf("%s", dialogText);
-					if( failsCount == 3 ) {
-						aut.insertRegistro(4007, -1, null, true);			
-						firstAutenticator(aut);
+				} catch( Exception e ) {
+					try {
+						failsCount = aut.applyFailure();
+						int remaningTries =  (3 - failsCount);
+						String dialogText = e.getMessage();
+						if( remaningTries > 0) {
+							dialogText = dialogText + ". Mais " + remaningTries + " tentativas.";
+						}
+						
+						System.out.printf("%s", dialogText);
+						if( failsCount == 3 ) {
+							aut.insertRegistro(4007, -1, null, true);
+							System.out.println("Email bloqueado\n");
+							firstAutenticator(aut);
+						}
+					} catch (Exception e2) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
-				} catch (Exception e2) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
 				}
-			}
-	    } else {
-			System.out.println("Email Bloqueado - Tente Novamente Mais Tarde");
-		}   	   
+	    	}
+	    }
+	    ret = 3;
+	    return ret;
 	}
 	
 	
@@ -201,7 +207,6 @@ private static void mainMenu (Autenticator aut) throws Exception {
 		
 		Usuario user = aut.getCurrentUserVerification();
 		Grupo grupoInstance = Grupo.getInstance(user.getGroup());
-
 		
 		try {
 			aut.insertRegistro(5001, -1, null, true);
@@ -510,7 +515,7 @@ private static void mainMenu (Autenticator aut) throws Exception {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-
+	
 			} catch( Exception e ) {
 				try {
 					aut.insertRegistro(7003, -1, null, true);
@@ -564,9 +569,9 @@ private static void mainMenu (Autenticator aut) throws Exception {
 		}
 		mainMenu(aut);
 		
-    }
+	}
 	
-private static void consultaArq (Autenticator aut, Usuario user) {
+	private static void consultaArq (Autenticator aut, Usuario user) {
 		
 		
 		String[] TabelaNomeArqSecretos = new String[] {"NOME__ARQUIVO", "NOME_SECRETO","DONO_ARQUIVO","GRUPO_ARQUIVO"};
@@ -702,6 +707,7 @@ private static void consultaArq (Autenticator aut, Usuario user) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+        aut.insertRegistro(1001, -1, null, false );
         int ret = 3;
 		try {
 			while(ret == 3) {

@@ -3,6 +3,7 @@
 
 package Autentication;
 
+import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -14,6 +15,8 @@ import java.security.Signature;
 
 
 import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
 import javax.crypto.KeyGenerator;
 
 public class SecretFileManager {
@@ -73,9 +76,9 @@ public class SecretFileManager {
         	aut.insertRegistro(8004, -1, null, true);
         	throw new Exception("Caminho inválido");
         }
+        byte[] fileBytes = Files.readAllBytes(path);
         Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
         cipher.init(Cipher.DECRYPT_MODE, privateKey);
-        byte[] fileBytes = Files.readAllBytes(path);
         byte[] seed = cipher.doFinal(fileBytes);
         // Com a seed gera a Key para a próxima etapa
         SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG");
