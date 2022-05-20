@@ -9,7 +9,7 @@ public class NewUsuario {
 	public static boolean createNewUsuario(String filePath, String nome, String senha, String email, String grupo) throws Exception {
 		int grupoAsInt = 0;
 		System.out.println("Grupo: " + grupo);
-		if( grupo.equals("Usuario") ) {
+		if( grupo.equals("usuario") ) {
 			grupoAsInt = 1;
 		}
 		Database db = Database.getInstance();

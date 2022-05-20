@@ -10,6 +10,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
+import javax.swing.JOptionPane;
+
 import org.sqlite.SQLiteException;
 
 import Autentication.*;
@@ -371,7 +373,7 @@ private static void mainMenu (Autenticator aut) throws Exception {
 			System.out.println("Caminho do arquivo do certificado digital:");
 			String caminhoCertificado = sc.nextLine();
 			
-			String [] lista = new String[] {"Admin","Usuario"};
+			String [] lista = new String[] {"administrador","usuario"};
 			List<Grupo> grupos = aut.getAllGrupos();
 			int i =0;
 			String [] list = new String [grupos.size()];
@@ -470,6 +472,7 @@ private static void mainMenu (Autenticator aut) throws Exception {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
+			System.out.println("Encerrando");
 			System.exit(0);
 		}
 		if (sair == 1) {
@@ -571,12 +574,8 @@ private static void mainMenu (Autenticator aut) throws Exception {
 		
 	}
 	
-	private static void consultaArq (Autenticator aut, Usuario user) {
-		
-		
-		String[] TabelaNomeArqSecretos = new String[] {"NOME__ARQUIVO", "NOME_SECRETO","DONO_ARQUIVO","GRUPO_ARQUIVO"};
-		
-		
+	private static void consultaArq (Autenticator aut, Usuario user) throws Exception {
+				
 		String storedPath = "";
 		
 		try {
@@ -589,16 +588,16 @@ private static void mainMenu (Autenticator aut) throws Exception {
 		// CHAMA CABECALHO
 		cabecalho(aut);
 		
+		sc = new Scanner(System.in);
+		System.out.println("Caminho da pasta:");
+		String camArq = sc.nextLine();
+		
 		try {
 			aut.insertRegistro(8003, -1, null, true);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		sc = new Scanner(System.in);
-		System.out.println("Caminho do arquivo do certificado digital:");
-		String camArq = sc.nextLine();
 		
 		String [] listedPath = camArq.split("/");
 		
@@ -608,53 +607,85 @@ private static void mainMenu (Autenticator aut) throws Exception {
 		String currentPath = storedPath + "index";
 		
 		System.out.println(currentPath);
-		byte[] listFiles = null;
+		String[][] listFiles = null;
 		try {
-			listFiles = aut.listSecretFiles(currentPath);
+			listFiles = aut.listSecretFilesAsStringMatrix(currentPath);
 		} catch( Exception e ) {
 			System.out.println("erro");
 		}
 		
 		if( listFiles != null ) {
 			
-			try {
-		    	  aut.insertRegistro(8010, -1, TabelaNomeArqSecretos[1], true);
-		      } catch (Exception e1) {
-				// TODO Auto-generated catch block
-		    	  e1.printStackTrace();
-		      }
-		      
-		      int group = 0;
-		      if( TabelaNomeArqSecretos[3].toString().equals("usuario")  ) {
-		    	  group = 1;
-		      }
+			for (int i = 0; i < listFiles.length; i++) {
+				System.out.println(i+1 + ". " + listFiles[i][0] + " " + listFiles[i][1] + " " + listFiles[i][2] + " " + listFiles[i][3]);
+			}
+			
+			int opcaoArq = 0;
+			
+			while(opcaoArq == 0) {
+				System.out.println("Escolha o numero do arquivo: ");
+				sc = new Scanner(System.in);
+				int arquivo = sc.nextInt();
+				
+				try {
+			    	  aut.insertRegistro(8010, -1, listFiles[arquivo - 1][1], true);
+			      } catch (Exception e1) {
+					// TODO Auto-generated catch block
+			    	  e1.printStackTrace();
+			      }
+			      
+			      int group = 0;
+			      if( listFiles[arquivo - 1][3].toString().equals("usuario"))
+			    	  group = 1;
 
-		      System.out.println(storedPath + TabelaNomeArqSecretos[1].toString());
-		      if(	  user.getEmail().equals(TabelaNomeArqSecretos[2].toString()) || 
-		    		  user.getGroup() ==  group ) {
-		    	  
-		    	  try {
-			    	  aut.insertRegistro(8011, -1, storedPath + TabelaNomeArqSecretos[1].toString(), true);
-			      } catch (Exception e1) {
-					// TODO Auto-generated catch block
-			    	  e1.printStackTrace();
+			      if(user.getEmail().equals(listFiles[arquivo - 1][2].toString()) || 
+			    		  user.getGroup() == group) {
+			    	  
+			    	  try {
+				    	  aut.insertRegistro(8011, -1, storedPath + listFiles[arquivo - 1][1].toString(), true);
+				      } catch (Exception e1) {
+						// TODO Auto-generated catch block
+				    	  e1.printStackTrace();
+				      }
+			    	  
+			    	  try {
+			    		  byte[] listFiles1 = aut.listSecretFiles(storedPath + listFiles[arquivo - 1][0].toString()); 
+			    		  DocxHelper.writeFile(storedPath + listFiles[arquivo - 1][1].toString(), listFiles1);
+			    		  System.out.println("Arquivo " + listFiles[arquivo - 1][1] + " gerado com sucesso!");
+			    		  System.out.println("Deseja continuar? (0 - Sim / 1 - Não)");
+			    		  sc = new Scanner(System.in);
+			    		  opcaoArq = sc.nextInt();
+						
+						if (opcaoArq == 1) {
+					    	try {
+					    		aut.insertRegistro(8002, -1, storedPath + listFiles[arquivo - 1][1].toString(), true);
+						    } catch (Exception e1) {
+							// TODO Auto-generated catch block
+						    	e1.printStackTrace();
+						    }
+							mainMenu(aut);
+						}
+				
+			    	  }
+			    	  
+			    	  catch( Exception e1 ) {
+			    		  if( e1.getMessage().contains(listFiles[arquivo - 1][1].toString() ))
+			    			  System.out.println("Assinatura digital errada.");
+			    		  else
+			    			  System.out.println(e1.getMessage()); 
+			    	  }
+			    	  
+			      } else {
+			    	  try {
+				    	  aut.insertRegistro(8012, -1, storedPath + listFiles[arquivo - 1][1].toString(), true);
+				      } catch (Exception e1) {
+						// TODO Auto-generated catch block
+				    	  e1.printStackTrace();
+				      }
+			    	  System.out.println("Usuario nao possui acesso");
 			      }
-		    	  
-		    	  try {
-		    		  byte[] listFiles1 = aut.listSecretFiles(storedPath + TabelaNomeArqSecretos[0].toString()); 
-		    		  DocxHelper.writeFile(storedPath + TabelaNomeArqSecretos[1].toString(), listFiles1);
-		    	  } catch( Exception e1 ) {
-		    	  }
-		    	  
-		      }  else {
-		    	  try {
-			    	  aut.insertRegistro(8012, -1, storedPath + TabelaNomeArqSecretos[1].toString(), true);
-			      } catch (Exception e1) {
-					// TODO Auto-generated catch block
-			    	  e1.printStackTrace();
-			      }
-		    	  System.out.println("Usuario nao possui acesso"); 
-		      }
+		     
+			} 
 			
 			try {
 				aut.insertRegistro(8009, -1, null, true);
@@ -662,8 +693,9 @@ private static void mainMenu (Autenticator aut) throws Exception {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		}
-
+	  
+		}  
+		
 	}
 
 	private static String[] buttonText() {
